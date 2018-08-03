@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -30,6 +31,7 @@ import com.wiliamjcj.wenquete.dto.EnqueteDTO;
 import com.wiliamjcj.wenquete.dto.OpcaoDTO;
 import com.wiliamjcj.wenquete.utils.APIResponse;
 
+@ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 @WebMvcTest(value = EnqueteController.class, secure = false)
 public class EnqueteAPITests {
