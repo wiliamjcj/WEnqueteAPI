@@ -3,14 +3,22 @@ package com.wiliamjcj.wenquete.dto;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
+
 import com.wiliamjcj.wenquete.utils.Jsonable;
 
 public class EnqueteDTO implements Jsonable {
 
 	private Long id;
 	private String token;
+	
+	@NotEmpty(message="{enquetedto.pergunta.notnull.msg}")
 	private String pergunta;
+	
+	@Size(min=2, message="{enquetedto.opcoes.size.msg}")
 	private List<OpcaoDTO> opcoes;
+	
 	private boolean iniciada;
 	private boolean encerrada;
 

@@ -1,36 +1,51 @@
 package com.wiliamjcj.wenquete.dto;
 
+import javax.validation.constraints.NotEmpty;
+
 import com.wiliamjcj.wenquete.utils.Jsonable;
 
-public class OpcaoDTO implements Jsonable {
+public class OpcaoDTO implements Jsonable
+{
 
-	private Long id;
-	private long qtd;
-	private String descricao;
-	
-	public String getDescricao() {
-		return descricao;
-	}
+    private Long id;
+    private long qtd;
 
-	public void setDescricao(String descricao) {
-		this.descricao = descricao;
-	}
+    @NotEmpty(message = "{opcaodto.descricao.notnull.msg}")
+    private String descricao;
 
-	public long getQtd() {
-		return qtd;
-	}
+    public void votar()
+    {
+        this.qtd += 1;
+    }
 
-	public void setQtd(long qtd) {
-		this.qtd = qtd;
-	}
+    public String getDescricao()
+    {
+        return descricao;
+    }
 
-	public Long getId() {
-		return id;
-	}
+    public void setDescricao(String descricao)
+    {
+        this.descricao = descricao;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
-	
-	
+    public long getQtd()
+    {
+        return qtd;
+    }
+
+    public void setQtd(long qtd)
+    {
+        this.qtd = qtd;
+    }
+
+    public Long getId()
+    {
+        return id;
+    }
+
+    public void setId(Long id)
+    {
+        this.id = id;
+    }
+
 }
