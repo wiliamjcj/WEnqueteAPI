@@ -2,9 +2,12 @@ package com.wiliamjcj.wenquete;
 
 import java.util.Locale;
 
+import org.flywaydb.core.Flyway;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.flyway.FlywayMigrationInitializer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.web.servlet.LocaleResolver;
@@ -47,6 +50,18 @@ public class WEnqueteApiApplication implements WebMvcConfigurer {
 	public void addInterceptors(InterceptorRegistry registry) {
 	    registry.addInterceptor(localeChangeInterceptor());
 	}
+	
 
+    @Bean
+    FlywayMigrationInitializer flywayInitializer(Flyway flyway) {
+        return new FlywayMigrationInitializer(flyway, (f) ->{} );
+    }
+
+
+    @Bean
+    @DependsOn("entityManagerFactory")
+    FlywayMigrationInitializer delayedFlywayInitializer(Flyway flyway) {
+        return new FlywayMigrationInitializer(flyway, null);
+    }
 
 }
