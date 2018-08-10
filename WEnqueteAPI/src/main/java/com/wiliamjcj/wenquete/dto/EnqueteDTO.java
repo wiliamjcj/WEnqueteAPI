@@ -6,11 +6,14 @@ import java.util.List;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.wiliamjcj.wenquete.utils.Jsonable;
 
 public class EnqueteDTO implements Jsonable {
 
 	private Long id;
+	
+	@JsonIgnore
 	private String token;
 	
 	@NotEmpty(message="{enquetedto.pergunta.notnull.msg}")

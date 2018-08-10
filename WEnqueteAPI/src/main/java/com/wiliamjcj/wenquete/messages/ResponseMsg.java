@@ -9,7 +9,8 @@ public enum ResponseMsg implements MessageProvider{
 	ENQUETE_CNTRL_ENQUETE_NOCONTENT("enquetecontroller.enquete.nocontent", HttpStatus.NO_CONTENT ),
 	ENQUETE_CNTRL_OPCAO_NOCONTENT("enquetecontroller.opcao.nocontent", HttpStatus.NO_CONTENT),
 	ENQUETE_CNTRL_ENCERRADA("enquetecontroller.encerrada", HttpStatus.CONFLICT),
-	ENQUETE_CNTRL_TOKEN_INVALIDO("enquetecontroller.token.invalido", HttpStatus.UNAUTHORIZED)
+	ENQUETE_CNTRL_TOKEN_INVALIDO("enquetecontroller.token.invalido", HttpStatus.UNAUTHORIZED),
+	ENQUETE_CNTRL_INATIVA("enquetecontroller.enquete.inativa", HttpStatus.UNAUTHORIZED)
 	;
 	
 	private String key;

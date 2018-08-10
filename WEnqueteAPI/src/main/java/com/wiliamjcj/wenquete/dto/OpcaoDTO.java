@@ -8,14 +8,14 @@ public class OpcaoDTO implements Jsonable
 {
 
     private Long id;
-    private long qtd;
+    private long quantidade;
 
     @NotEmpty(message = "{opcaodto.descricao.notnull.msg}")
     private String descricao;
 
     public void votar()
     {
-        this.qtd += 1;
+        this.quantidade += 1;
     }
 
     public String getDescricao()
@@ -28,17 +28,15 @@ public class OpcaoDTO implements Jsonable
         this.descricao = descricao;
     }
 
-    public long getQtd()
-    {
-        return qtd;
-    }
+    public long getQuantidade() {
+		return quantidade;
+	}
 
-    public void setQtd(long qtd)
-    {
-        this.qtd = qtd;
-    }
+	public void setQuantidade(long quantidade) {
+		this.quantidade = quantidade;
+	}
 
-    public Long getId()
+	public Long getId()
     {
         return id;
     }

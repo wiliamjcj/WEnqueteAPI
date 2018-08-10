@@ -7,10 +7,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -18,12 +17,9 @@ import javax.persistence.TemporalType;
 public class Opcao {
 	
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.IDENTITY, generator="OPCAO_GEN")
+	@SequenceGenerator(name="OPCAO_GEN", sequenceName="OPCAO_SEQ", allocationSize=1)
 	private Long id;
-	
-	@ManyToOne
-	@JoinColumn(name="id_enquete")
-	private Enquete enquete;
 	
 	private long quantidade;
 	
