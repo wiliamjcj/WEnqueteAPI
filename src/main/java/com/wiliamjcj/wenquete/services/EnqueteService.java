@@ -41,7 +41,7 @@ public class EnqueteService {
 	 * @return Page<EnqueteDTO>
 	 */
 	public Page<EnqueteDTO> buscarEnquetes(Pageable pageable) {
-		Page<Enquete> enquetes = enqueteRepository.findAll(pageable);
+		Page<Enquete> enquetes = enqueteRepository.findByIniciada(true, pageable);
 
 		Page<EnqueteDTO> enquetesDTO = mapper.mapPage(enquetes, EnqueteDTO.class);
 

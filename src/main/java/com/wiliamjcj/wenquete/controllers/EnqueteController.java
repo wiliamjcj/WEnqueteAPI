@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -35,6 +36,8 @@ import com.wiliamjcj.wenquete.messages.ResponseMsg;
 import com.wiliamjcj.wenquete.services.EnqueteService;
 import com.wiliamjcj.wenquete.utils.APIResponse;
 
+import io.swagger.annotations.ApiOperation;
+
 @RestController
 @RequestMapping(value = "${rest.enquete.mapping}")
 public class EnqueteController {
@@ -50,7 +53,9 @@ public class EnqueteController {
 	@Value("${rest.enquete.mapping}")
 	private String BASE_ENDPOINT;
 
-	@GetMapping
+	
+	@ApiOperation(value="Lista as enquetes que já foram iniciadas.")
+	@GetMapping(produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<APIResponse<Page<EnqueteDTO>>> listar(Pageable p) {
 		Page<EnqueteDTO> enquetes = enqueteService.buscarEnquetes(p);
 		APIResponse<Page<EnqueteDTO>> apiResponse = new APIResponse<Page<EnqueteDTO>>();
@@ -58,7 +63,8 @@ public class EnqueteController {
 		return ResponseEntity.ok(apiResponse);
 	}
 
-	@PostMapping
+	@ApiOperation(value="Adiciona uma nova enquete, retornando seu id e token.")
+	@PostMapping(produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<APIResponse<String>> adicionarEnquete(@Valid @RequestBody EnqueteDTO enquete,
 			BindingResult res) throws URISyntaxException, NoSuchAlgorithmException, UnsupportedEncodingException {
 		
@@ -74,7 +80,8 @@ public class EnqueteController {
 		return ResponseEntity.created(location).header("token", enquete.getToken()).body(apiResponse);
 	}
 
-	@GetMapping(value = "/{id}")
+	@ApiOperation(value="Busca uma enquete por id.")
+	@GetMapping(value = "/{id}", produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> buscarEnquete(@PathVariable(name = "id", required = true) Long id,
 			@RequestHeader(name="Accept-Language", required=false) Locale locale) {
 		
@@ -94,7 +101,8 @@ public class EnqueteController {
 		}
 	}
 
-	@PatchMapping(value = "/{id}/iniciar")
+	@ApiOperation(value="Inicia uma enquete, permitindo assim a votação. Necessário informar o id e o token. ")
+	@PatchMapping(value = "/{id}/iniciar", produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<APIResponse<String>> iniciarEnquete(@PathVariable(name = "id", required = true) Long id,
 			@RequestHeader(value = "token", required = true) String token,
 			@RequestHeader(name="Accept-Language", required=false) Locale locale) {
@@ -119,7 +127,8 @@ public class EnqueteController {
 		}
 	}
 
-	@PostMapping(value = "/{id}/{idOpcao}")
+	@ApiOperation(value="Vota em uma das opções da enquete, informando o id da enquete e o id da opção desejada.")
+	@PostMapping(value = "/{id}/{idOpcao}", produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<APIResponse<EnqueteDTO>> votarEnquete(@PathVariable(name = "id", required = true) Long id,
 			@PathVariable(name = "idOpcao", required = true) Long idOpcao,
 			@RequestHeader(name="Accept-Language", required=false) Locale locale) {
@@ -148,7 +157,8 @@ public class EnqueteController {
 		return ResponseEntity.ok(apiResponse);
 	}
 
-	@PatchMapping(value = "/{id}/terminar")
+	@ApiOperation(value="Encerra uma enquete, finalizando assim a votação. Necessário informar o id e o token.")
+	@PatchMapping(value = "/{id}/terminar", produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<APIResponse<EnqueteDTO>> terminarEnquete(@PathVariable(name = "id", required = true) Long id,
 			@RequestHeader(value = "token", required = true) String token,
 			@RequestHeader(name="Accept-Language", required=false) Locale locale) {
@@ -172,7 +182,8 @@ public class EnqueteController {
 		}
 	}
 
-	@DeleteMapping(value = "/{id}")
+	@ApiOperation(value="Deleta uma enquete através do id e do token gerado na inserção da mesma.")
+	@DeleteMapping(value = "/{id}", produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<APIResponse<EnqueteDTO>> deletarEnquete(@PathVariable(name="id", required=true) Long id,
 			@RequestHeader(value = "token", required = true) String token,
 			@RequestHeader(name="Accept-Language", required=false) Locale locale) {
