@@ -22,8 +22,8 @@ import javax.persistence.TemporalType;
 public class Enquete {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY, generator="ENQUETE_GEN")
-	@SequenceGenerator(name="ENQUETE_GEN", sequenceName="ENQUETE_SEQ", allocationSize=1)
+	@GeneratedValue(strategy = GenerationType.IDENTITY, generator="enquete_gen")
+	@SequenceGenerator(name="enquete_gen", sequenceName="enquete_id_seq", allocationSize=1)
 	private Long id;
 
 	@OneToMany(fetch=FetchType.LAZY , cascade=CascadeType.ALL)

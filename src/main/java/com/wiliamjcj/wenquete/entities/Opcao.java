@@ -17,8 +17,8 @@ import javax.persistence.TemporalType;
 public class Opcao {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY, generator="OPCAO_GEN")
-	@SequenceGenerator(name="OPCAO_GEN", sequenceName="OPCAO_SEQ", allocationSize=1)
+	@GeneratedValue(strategy = GenerationType.IDENTITY, generator="opcao_gen")
+	@SequenceGenerator(name="opcao_gen", sequenceName="opcao_id_seq", allocationSize=1)
 	private Long id;
 	
 	private long quantidade;

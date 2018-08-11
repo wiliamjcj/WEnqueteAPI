@@ -61,7 +61,7 @@ public class EnqueteService {
 		Enquete enquete = (Enquete) mapper.map(dto, Enquete.class);
 		enquete = enqueteRepository.save(enquete);
 
-		enquete.setToken("BA5F0DCF723C4D1567083058D0776CCCECB4B208");//generateToken(enquete));
+		enquete.setToken(generateToken(enquete));
 		enquete = enqueteRepository.save(enquete);
 
 		return (EnqueteDTO) mapper.map(enquete, EnqueteDTO.class);
