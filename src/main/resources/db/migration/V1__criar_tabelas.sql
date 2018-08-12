@@ -1,8 +1,6 @@
 --TABELA ENQUETE
 
 CREATE SEQUENCE public.enquete_id_seq;
-ALTER TABLE public.enquete_id_seq
-  OWNER TO wenquete;
 
 CREATE TABLE public.enquete
 (
@@ -18,13 +16,9 @@ CREATE TABLE public.enquete
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE public.enquete
-  OWNER TO wenquete;
   
 --TABELA OPCAO  
-CREATE SEQUENCE public.opcao_id_seq;
-ALTER TABLE public.opcao_id_seq
-  OWNER TO wenquete;  
+CREATE SEQUENCE public.opcao_id_seq; 
 
 CREATE TABLE public.opcao
 (
@@ -42,7 +36,3 @@ CREATE TABLE public.opcao
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE public.opcao
-  OWNER TO wenquete;
-
-  
