@@ -100,7 +100,7 @@ public class EnqueteAPITests {
 	@Test
 	public void adicionarEnqueteSucesso() throws Exception {
 		
-		EnqueteDTO enqueteTeste = criarEnquete(null, null);
+		EnqueteDTO enqueteTeste = criarEnqueteTeste(null, null, null);
 
 		String json = enqueteTeste.toJson();
 		
@@ -120,6 +120,7 @@ public class EnqueteAPITests {
 		String token = result.getResponse().getHeader("token");
 		assertThat(token).isNotBlank();
 	}
+	
 	@Test
 	public void listarTodasEnquetesSucesso() throws Exception {
 		RequestBuilder requestBuilder = MockMvcRequestBuilders.get(BASE_ENDPOINT)
@@ -239,7 +240,6 @@ public class EnqueteAPITests {
 			throws IOException, JsonParseException, JsonMappingException, JSONException {
 		
 		ObjectMapper mapper = new ObjectMapper();
-		//return mapper.readValue(json, new TypeReference<APIResponse<ResponsePage<EnqueteDTO>>>(){});
 		
 		JSONObject jo = new JSONObject(json);
 		String listJson = jo.getJSONObject("data").getString("content");
@@ -252,23 +252,6 @@ public class EnqueteAPITests {
 		ObjectMapper mapper = new ObjectMapper();
 		TypeReference<APIResponse<EnqueteDTO>> tipo = new TypeReference<APIResponse<EnqueteDTO>>() {};
 		return mapper.readValue(json, tipo);
-	}
-
-	private EnqueteDTO criarEnquete(Long id, String token) {
-		EnqueteDTO enqueteTeste = new EnqueteDTO();
-		enqueteTeste.setId(id);
-		enqueteTeste.setToken(token);
-		enqueteTeste.setPergunta("pergunta " + id);
-
-		OpcaoDTO opcao = new OpcaoDTO();
-		opcao.setDescricao("Talvez");
-
-		OpcaoDTO opcao2 = new OpcaoDTO();
-		opcao2.setDescricao("Não");
-
-		enqueteTeste.getOpcoes().add(opcao);
-		enqueteTeste.getOpcoes().add(opcao2);
-		return enqueteTeste;
 	}
 	
 }
