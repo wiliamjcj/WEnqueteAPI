@@ -9,12 +9,11 @@ import java.util.Optional;
 
 import javax.validation.Valid;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -34,14 +33,13 @@ import com.wiliamjcj.wenquete.messages.MsgUtil;
 import com.wiliamjcj.wenquete.messages.ResponseMsg;
 import com.wiliamjcj.wenquete.services.EnqueteService;
 import com.wiliamjcj.wenquete.utils.APIResponse;
+import com.wiliamjcj.wenquete.utils.ExceptionLogger;
 
 import io.swagger.annotations.ApiOperation;
 
 @RestController
 @RequestMapping(value = "${rest.enquete.mapping}")
 public class EnqueteController {
-
-	private final Logger log = LoggerFactory.getLogger(EnqueteController.class);
 
 	@Autowired
 	private EnqueteService enqueteService;
@@ -52,156 +50,189 @@ public class EnqueteController {
 	@Value("${rest.enquete.mapping}")
 	private String BASE_ENDPOINT;
 
-	
-	@ApiOperation(value="Lista as enquetes que já foram iniciadas.")
-	@GetMapping(produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@Autowired
+	private ExceptionLogger elog;
+
+	@ApiOperation(value = "Lista as enquetes que já foram iniciadas.")
+	@GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<APIResponse<Page<EnqueteDTO>>> listar(Pageable p) {
-		Page<EnqueteDTO> enquetes = enqueteService.buscarEnquetes(p);
-		APIResponse<Page<EnqueteDTO>> apiResponse = new APIResponse<Page<EnqueteDTO>>();
-		apiResponse.setData(enquetes);
-		return ResponseEntity.ok(apiResponse);
+		try {
+			Page<EnqueteDTO> enquetes = enqueteService.buscarEnquetes(p);
+			APIResponse<Page<EnqueteDTO>> apiResponse = new APIResponse<Page<EnqueteDTO>>();
+			apiResponse.setData(enquetes);
+			return ResponseEntity.ok(apiResponse);
+		} catch (Exception e) {
+			elog.erro(e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 
-	@ApiOperation(value="Adiciona uma nova enquete, retornando seu id e token.")
-	@PostMapping(produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ApiOperation(value = "Adiciona uma nova enquete, retornando seu id e token.")
+	@PostMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<APIResponse<String>> adicionarEnquete(@Valid @RequestBody EnqueteDTO enquete,
 			BindingResult res) throws URISyntaxException, NoSuchAlgorithmException, UnsupportedEncodingException {
-		
-		APIResponse<String> apiResponse = new APIResponse<String>();
-		
-		if (res.hasErrors()) {
-			res.getAllErrors().stream().forEach(err -> apiResponse.getErrors().add(err.getDefaultMessage()));
-			return ResponseEntity.badRequest().body(apiResponse);
-		}
-		enquete = enqueteService.criarEnquete(enquete);
-		URI location = new URI(BASE_ENDPOINT +"/"+ enquete.getId());
+		try {
+			APIResponse<String> apiResponse = new APIResponse<String>();
 
-		return ResponseEntity.created(location).header("token", enquete.getToken()).body(apiResponse);
+			if (res.hasErrors()) {
+				res.getAllErrors().stream().forEach(err -> apiResponse.getErrors().add(err.getDefaultMessage()));
+				return ResponseEntity.badRequest().body(apiResponse);
+			}
+			enquete = enqueteService.criarEnquete(enquete);
+			URI location = new URI(BASE_ENDPOINT + "/" + enquete.getId());
+
+			return ResponseEntity.created(location).header("token", enquete.getToken()).body(apiResponse);
+		} catch (Exception e) {
+			elog.erro(e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 
-	@ApiOperation(value="Busca uma enquete por id.")
-	@GetMapping(value = "/{id}", produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ApiOperation(value = "Busca uma enquete por id.")
+	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> buscarEnquete(@PathVariable(name = "id", required = true) Long id,
-			@RequestHeader(name="Accept-Language", required=false) Locale locale) {
-		
-		APIResponse<EnqueteDTO> apiResponse = new APIResponse<EnqueteDTO>();
-		ResponseMsg erro = null;
-		
-		EnqueteDTO enquete = enqueteService.buscarEnquete(id);
-		apiResponse.setData(enquete);
+			@RequestHeader(name = "Accept-Language", required = false) Locale locale) {
+		try {
+			APIResponse<EnqueteDTO> apiResponse = new APIResponse<EnqueteDTO>();
+			ResponseMsg erro = null;
 
-		erro = null != enquete.getId() ? erro : ResponseMsg.ENQUETE_CNTRL_ENQUETE_NOCONTENT;
-		
-		if (null == erro) {
-			return ResponseEntity.ok(apiResponse);
-		}else {
-			apiResponse.getErrors().add(messages.msg(erro, locale));
-			return ResponseEntity.status(erro.getStatus()).body(apiResponse);
+			EnqueteDTO enquete = enqueteService.buscarEnquete(id);
+			apiResponse.setData(enquete);
+
+			erro = null != enquete.getId() ? erro : ResponseMsg.ENQUETE_CNTRL_ENQUETE_NOCONTENT;
+
+			if (null == erro) {
+				return ResponseEntity.ok(apiResponse);
+			} else {
+				apiResponse.getErrors().add(messages.msg(erro, locale));
+				return ResponseEntity.status(erro.getStatus()).body(apiResponse);
+			}
+		} catch (Exception e) {
+			elog.erro(e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 	}
 
-	@ApiOperation(value="Inicia uma enquete, permitindo assim a votação. Necessário informar o id e o token. ")
-	@PatchMapping(value = "/{id}/iniciar", produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ApiOperation(value = "Inicia uma enquete, permitindo assim a votação. Necessário informar o id e o token. ")
+	@PatchMapping(value = "/{id}/iniciar", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<APIResponse<String>> iniciarEnquete(@PathVariable(name = "id", required = true) Long id,
 			@RequestHeader(value = "token", required = true) String token,
-			@RequestHeader(name="Accept-Language", required=false) Locale locale) {
+			@RequestHeader(name = "Accept-Language", required = false) Locale locale) {
+		try {
+			APIResponse<String> apiResponse = new APIResponse<String>();
+			ResponseMsg msgRes = ResponseMsg.ENQUETE_CNTRL_INICIAR_SUCESSO;
 
-		APIResponse<String> apiResponse = new APIResponse<String>();
-		ResponseMsg msgRes = ResponseMsg.ENQUETE_CNTRL_INICIAR_SUCESSO;
+			EnqueteDTO enquete = enqueteService.buscarEnquete(id);
 
-		EnqueteDTO enquete = enqueteService.buscarEnquete(id);
+			msgRes = null != enquete.getId() ? msgRes : ResponseMsg.ENQUETE_CNTRL_ENQUETE_NOCONTENT;
+			msgRes = token.equals(enquete.getToken()) ? msgRes : ResponseMsg.ENQUETE_CNTRL_TOKEN_INVALIDO;
+			msgRes = !enquete.isEncerrada() ? msgRes : ResponseMsg.ENQUETE_CNTRL_ENCERRADA;
 
-		msgRes = null != enquete.getId() ? msgRes : ResponseMsg.ENQUETE_CNTRL_ENQUETE_NOCONTENT;
-		msgRes = token.equals(enquete.getToken()) ? msgRes : ResponseMsg.ENQUETE_CNTRL_TOKEN_INVALIDO;
-		msgRes = !enquete.isEncerrada() ? msgRes : ResponseMsg.ENQUETE_CNTRL_ENCERRADA;
+			apiResponse.setData(messages.msg(msgRes, locale));
 
-		apiResponse.setData(messages.msg(msgRes, locale));
-
-		if (msgRes.equals(ResponseMsg.ENQUETE_CNTRL_INICIAR_SUCESSO)) {
-			enquete.setIniciada(true);
-			enqueteService.atualizarEnquete(enquete);
-			return ResponseEntity.ok(apiResponse);
-		} else {
-			return ResponseEntity.status(msgRes.getStatus()).body(apiResponse);
+			if (msgRes.equals(ResponseMsg.ENQUETE_CNTRL_INICIAR_SUCESSO)) {
+				enquete.setIniciada(true);
+				enqueteService.atualizarEnquete(enquete);
+				return ResponseEntity.ok(apiResponse);
+			} else {
+				return ResponseEntity.status(msgRes.getStatus()).body(apiResponse);
+			}
+		} catch (Exception e) {
+			elog.erro(e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 	}
 
-	@ApiOperation(value="Vota em uma das opções da enquete, informando o id da enquete e o id da opção desejada.")
-	@PostMapping(value = "/{id}/{idOpcao}", produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ApiOperation(value = "Vota em uma das opções da enquete, informando o id da enquete e o id da opção desejada.")
+	@PostMapping(value = "/{id}/{idOpcao}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<APIResponse<EnqueteDTO>> votarEnquete(@PathVariable(name = "id", required = true) Long id,
 			@PathVariable(name = "idOpcao", required = true) Long idOpcao,
-			@RequestHeader(name="Accept-Language", required=false) Locale locale) {
+			@RequestHeader(name = "Accept-Language", required = false) Locale locale) {
+		try {
+			APIResponse<EnqueteDTO> apiResponse = new APIResponse<EnqueteDTO>();
+			ResponseMsg msgErro = null;
 
-		APIResponse<EnqueteDTO> apiResponse = new APIResponse<EnqueteDTO>();
-		ResponseMsg msgErro = null;
+			EnqueteDTO enquete = enqueteService.buscarEnquete(id);
 
-		EnqueteDTO enquete = enqueteService.buscarEnquete(id);
+			msgErro = null != enquete.getId() ? msgErro : ResponseMsg.ENQUETE_CNTRL_ENQUETE_NOCONTENT;
+			msgErro = enquete.isIniciada() && !enquete.isEncerrada() ? msgErro : ResponseMsg.ENQUETE_CNTRL_INATIVA;
 
-		msgErro = null != enquete.getId() ? msgErro : ResponseMsg.ENQUETE_CNTRL_ENQUETE_NOCONTENT;
-		msgErro = enquete.isIniciada() && !enquete.isEncerrada()  ? msgErro : ResponseMsg.ENQUETE_CNTRL_INATIVA;
+			Optional<OpcaoDTO> opcao = enquete.getOpcoes().stream().filter(op -> op.getId().equals(idOpcao))
+					.findFirst();
 
-		Optional<OpcaoDTO> opcao = enquete.getOpcoes().stream().filter(op -> op.getId().equals(idOpcao)).findFirst();
+			msgErro = opcao.isPresent() ? msgErro : ResponseMsg.ENQUETE_CNTRL_OPCAO_NOCONTENT;
 
-		msgErro = opcao.isPresent() ? msgErro : ResponseMsg.ENQUETE_CNTRL_OPCAO_NOCONTENT;
+			if (null == msgErro) {
+				opcao.get().votar();
+				enquete = enqueteService.atualizarEnquete(enquete);
+			} else {
+				apiResponse.getErrors().add(messages.msg(msgErro, locale));
+				return ResponseEntity.status(msgErro.getStatus()).body(apiResponse);
+			}
 
-		if (null == msgErro) {
-			opcao.get().votar();
-			enquete = enqueteService.atualizarEnquete(enquete);
-		} else {
-			apiResponse.getErrors().add(messages.msg(msgErro, locale));
-			return ResponseEntity.status(msgErro.getStatus()).body(apiResponse);
+			apiResponse.setData(enquete);
+			return ResponseEntity.ok(apiResponse);
+		} catch (Exception e) {
+			elog.erro(e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
-
-		apiResponse.setData(enquete);
-		return ResponseEntity.ok(apiResponse);
 	}
 
-	@ApiOperation(value="Encerra uma enquete, finalizando assim a votação. Necessário informar o id e o token.")
-	@PatchMapping(value = "/{id}/terminar", produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ApiOperation(value = "Encerra uma enquete, finalizando assim a votação. Necessário informar o id e o token.")
+	@PatchMapping(value = "/{id}/terminar", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<APIResponse<EnqueteDTO>> terminarEnquete(@PathVariable(name = "id", required = true) Long id,
 			@RequestHeader(value = "token", required = true) String token,
-			@RequestHeader(name="Accept-Language", required=false) Locale locale) {
+			@RequestHeader(name = "Accept-Language", required = false) Locale locale) {
+		try {
+			APIResponse<EnqueteDTO> apiResponse = new APIResponse<EnqueteDTO>();
+			ResponseMsg erroMsg = null;
 
-		APIResponse<EnqueteDTO> apiResponse = new APIResponse<EnqueteDTO>();
-		ResponseMsg erroMsg = null;
+			EnqueteDTO enquete = enqueteService.buscarEnquete(id);
 
-		EnqueteDTO enquete = enqueteService.buscarEnquete(id);
+			erroMsg = null != enquete.getId() ? erroMsg : ResponseMsg.ENQUETE_CNTRL_ENQUETE_NOCONTENT;
+			erroMsg = token.equals(enquete.getToken()) ? erroMsg : ResponseMsg.ENQUETE_CNTRL_TOKEN_INVALIDO;
 
-		erroMsg = null != enquete.getId() ? erroMsg : ResponseMsg.ENQUETE_CNTRL_ENQUETE_NOCONTENT;
-		erroMsg = token.equals(enquete.getToken()) ? erroMsg : ResponseMsg.ENQUETE_CNTRL_TOKEN_INVALIDO;
-
-		if (null == erroMsg) {
-			enquete.setEncerrada(true);
-			enquete = enqueteService.atualizarEnquete(enquete);
-			apiResponse.setData(enquete);
-			return ResponseEntity.ok(apiResponse);
-		} else {
-			apiResponse.getErrors().add(messages.msg(erroMsg, locale));
-			return ResponseEntity.status(erroMsg.getStatus()).body(apiResponse);
+			if (null == erroMsg) {
+				enquete.setEncerrada(true);
+				enquete = enqueteService.atualizarEnquete(enquete);
+				apiResponse.setData(enquete);
+				return ResponseEntity.ok(apiResponse);
+			} else {
+				apiResponse.getErrors().add(messages.msg(erroMsg, locale));
+				return ResponseEntity.status(erroMsg.getStatus()).body(apiResponse);
+			}
+		} catch (Exception e) {
+			elog.erro(e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 	}
 
-	@ApiOperation(value="Deleta uma enquete através do id e do token gerado na inserção da mesma.")
-	@DeleteMapping(value = "/{id}", produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<APIResponse<EnqueteDTO>> deletarEnquete(@PathVariable(name="id", required=true) Long id,
+	@ApiOperation(value = "Deleta uma enquete através do id e do token gerado na inserção da mesma.")
+	@DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<APIResponse<EnqueteDTO>> deletarEnquete(@PathVariable(name = "id", required = true) Long id,
 			@RequestHeader(value = "token", required = true) String token,
-			@RequestHeader(name="Accept-Language", required=false) Locale locale) {
+			@RequestHeader(name = "Accept-Language", required = false) Locale locale) {
+		try {
+			APIResponse<EnqueteDTO> apiResponse = new APIResponse<EnqueteDTO>();
+			ResponseMsg erroMsg = null;
 
-		APIResponse<EnqueteDTO> apiResponse = new APIResponse<EnqueteDTO>();
-		ResponseMsg erroMsg = null;
+			EnqueteDTO enquete = enqueteService.buscarEnquete(id);
 
-		EnqueteDTO enquete = enqueteService.buscarEnquete(id);
+			erroMsg = null != enquete.getId() ? erroMsg : ResponseMsg.ENQUETE_CNTRL_ENQUETE_NOCONTENT;
+			erroMsg = token.equals(enquete.getToken()) ? erroMsg : ResponseMsg.ENQUETE_CNTRL_TOKEN_INVALIDO;
 
-		erroMsg = null != enquete.getId() ? erroMsg : ResponseMsg.ENQUETE_CNTRL_ENQUETE_NOCONTENT;
-		erroMsg = token.equals(enquete.getToken()) ? erroMsg : ResponseMsg.ENQUETE_CNTRL_TOKEN_INVALIDO;
-
-		if (null == erroMsg) {
-			apiResponse.setData(enquete);
-			enqueteService.deletarEnquete(enquete);
-			return ResponseEntity.ok(apiResponse);
-		} else {
-			apiResponse.getErrors().add(messages.msg(erroMsg, locale));
-			return ResponseEntity.status(erroMsg.getStatus()).body(apiResponse);
+			if (null == erroMsg) {
+				apiResponse.setData(enquete);
+				enqueteService.deletarEnquete(enquete);
+				return ResponseEntity.ok(apiResponse);
+			} else {
+				apiResponse.getErrors().add(messages.msg(erroMsg, locale));
+				return ResponseEntity.status(erroMsg.getStatus()).body(apiResponse);
+			}
+		} catch (Exception e) {
+			elog.erro(e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 	}
+
 }

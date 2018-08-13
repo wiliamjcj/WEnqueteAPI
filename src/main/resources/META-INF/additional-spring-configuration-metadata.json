@@ -13,5 +13,15 @@
     "name": "enquete.fake.token",
     "type": "java.lang.String",
     "description": "A description for 'enquete.fake.token'"
+  },
+  {
+    "name": "logging.printstatcktrace",
+    "type": "java.lang.String",
+    "description": "Printar stacktrace contextual nos logs."
+  },
+  {
+    "name": "logging.printfullstatcktrace",
+    "type": "java.lang.String",
+    "description": "Printar stacktrace completo nos logs."
   }
 ]}

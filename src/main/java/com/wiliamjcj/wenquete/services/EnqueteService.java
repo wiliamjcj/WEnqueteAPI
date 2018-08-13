@@ -7,8 +7,6 @@ import java.util.Optional;
 
 import javax.xml.bind.DatatypeConverter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -31,8 +29,6 @@ public class EnqueteService {
 
 	@Value("${application.secrete.key}")
 	private String chaveToken;
-
-	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
 	/**
 	 * Busca todas as enquetes de forma paginada.
